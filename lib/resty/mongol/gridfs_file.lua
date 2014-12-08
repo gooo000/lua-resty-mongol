@@ -14,6 +14,8 @@ function gridfs_file_mt:write(buf, offset, size)
     if offset > self.file_size then return nil, "invalid offset" end
     if size > #buf then return nil, "invalid size" end
 
+    self._md5:update(string.sub(buf, 1, size))
+    
     local cn        -- number of chunks to be updated
     local af        -- number of bytes to be updated in first chunk
     local bn = 0    -- bytes number of buf already updated
@@ -170,22 +172,13 @@ function gridfs_file_mt:read(size, offset)
 end
 
 function gridfs_file_mt:update_md5()
-    local n = math.floor(self.file_size/self.chunk_size)
-    local md5_obj = md5:new()
-    local r, i, err
-
-    for i = 0, n do
-        r = self.chunk_col:find_one({files_id = self.files_id, n = i})
-        if not r then return false, "read chunk failed" end
-
-        md5_obj:update(r.data) 
-    end
-    local md5hex = str.to_hex(md5_obj:final())
-
+    local r, err
+    local md5hex = str.to_hex(self._md5:final())
     local nv = {}
+
     nv["$set"] = {md5 = md5hex}
     self.file_md5 = md5hex
-    r,err = self.file_col:update({_id = self.files_id}, nv, 0, 0, true)
+    r, err = self.file_col:update({_id = self.files_id}, nv, 0, 0, true)
     if not r then return false, "update failed: "..err end
     return true
 end

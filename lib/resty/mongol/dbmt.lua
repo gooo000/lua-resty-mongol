@@ -30,7 +30,7 @@ function dbmethods:cmd(q)
 end
 
 function dbmethods:listcollections ( )
-    local col = self:get_col("system.namespaces")
+    local col = self:get_col("system.indexes")
     return col:find( { } )
 end
 
@@ -96,6 +96,18 @@ function dbmethods:get_gridfs(fs)
             file_col = self:get_col(fs..".files");
             chunk_col = self:get_col(fs..".chunks");
         } , gridfs)
+end
+
+function dbmethods:list()
+    return self:listcollections()
+end
+
+function dbmethods:create_col(collection)
+    r, err = self:cmd({create=collection})
+    if not r then
+        return nil, err
+    end
+    return 1
 end
 
 return dbmt

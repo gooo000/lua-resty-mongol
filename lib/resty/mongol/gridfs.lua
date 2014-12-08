@@ -74,6 +74,7 @@ function gridfs_mt:new(meta)
                     files_id = meta._id;
                     file_size = 0;
                     file_md5 = 0;
+                    _md5 = md5:new();
                     file_name = meta.filename;
                     }, gridfs_file)
 end
