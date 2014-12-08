@@ -55,6 +55,14 @@ function gridfs_mt:remove(fields, continue_on_err, safe)
     return n
 end
 
+function gridfs_mt:drop()
+    local r, err = self.chunk_col:drop()
+    if not r then return nil, "failed remove chunks: "..err end
+    local r, err = self.file_col:drop()
+    if not r then return nil, "failed remove files: "..err end
+    return 1
+end
+
 function gridfs_mt:new(meta)
     meta = meta or {}
     meta._id = meta._id or object_id.new()
